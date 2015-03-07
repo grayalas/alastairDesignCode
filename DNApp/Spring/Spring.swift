@@ -1,10 +1,24 @@
+// The MIT License (MIT)
 //
-//  Spring.swift
-//  SpringApp
+// Copyright (c) 2015 Meng To (meng@designcode.io)
 //
-//  Created by James Tang on 15/1/15.
-//  Copyright (c) 2015 Meng To. All rights reserved.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 import UIKit
 
@@ -17,6 +31,7 @@ import UIKit
     var duration: CGFloat { get set }
     var damping: CGFloat { get set }
     var velocity: CGFloat { get set }
+    var repeatCount: Float { get set }
     var x: CGFloat { get set }
     var y: CGFloat { get set }
     var scaleX: CGFloat { get set }
@@ -30,14 +45,38 @@ import UIKit
     var layer : CALayer { get }
     var transform : CGAffineTransform { get set }
     var alpha : CGFloat { get set }
+    
+    func animate()
+    func animateNext(completion: () -> ())
+    func animateTo()
+    func animateToNext(completion: () -> ())
 }
 
 public class Spring : NSObject {
 
-    private var view : Springable
+    private unowned var view : Springable
+    private var shouldAnimateAfterActive = false
 
     init(_ view: Springable) {
         self.view = view
+        super.init()
+        commonInit()
+    }
+
+    func commonInit() {
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "didBecomeActiveNotification:", name: UIApplicationDidBecomeActiveNotification, object: nil)
+    }
+
+    func didBecomeActiveNotification(notification: NSNotification) {
+        if shouldAnimateAfterActive {
+            alpha = 0
+            animate()
+            shouldAnimateAfterActive = false
+        }
+    }
+
+    deinit {
+        NSNotificationCenter.defaultCenter().removeObserver(self, name: UIApplicationDidBecomeActiveNotification, object: nil)
     }
 
     private var autostart: Bool { set { self.view.autostart = newValue } get { return self.view.autostart }}
@@ -48,6 +87,7 @@ public class Spring : NSObject {
     private var duration: CGFloat { set { self.view.duration = newValue } get { return self.view.duration }}
     private var damping: CGFloat { set { self.view.damping = newValue } get { return self.view.damping }}
     private var velocity: CGFloat { set { self.view.velocity = newValue } get { return self.view.velocity }}
+    private var repeatCount: Float { set { self.view.repeatCount = newValue } get { return self.view.repeatCount }}
     private var x: CGFloat { set { self.view.x = newValue } get { return self.view.x }}
     private var y: CGFloat { set { self.view.y = newValue } get { return self.view.y }}
     private var scaleX: CGFloat { set { self.view.scaleX = newValue } get { return self.view.scaleX }}
@@ -136,7 +176,7 @@ public class Spring : NSObject {
             animation.timingFunction = getTimingFunction(curve)
             animation.duration = CFTimeInterval(duration)
             animation.additive = true
-            animation.repeatCount = 1
+            animation.repeatCount = repeatCount
             animation.beginTime = CACurrentMediaTime() + CFTimeInterval(delay)
             layer.addAnimation(animation, forKey: "shake")
         case "pop":
@@ -147,7 +187,7 @@ public class Spring : NSObject {
             animation.timingFunction = getTimingFunction(curve)
             animation.duration = CFTimeInterval(duration)
             animation.additive = true
-            animation.repeatCount = 1
+            animation.repeatCount = repeatCount
             animation.beginTime = CACurrentMediaTime() + CFTimeInterval(delay)
             layer.addAnimation(animation, forKey: "pop")
         case "flipX":
@@ -188,7 +228,7 @@ public class Spring : NSObject {
             morphX.keyTimes = [0, 0.2, 0.4, 0.6, 0.8, 1]
             morphX.timingFunction = getTimingFunction(curve)
             morphX.duration = CFTimeInterval(duration)
-            morphX.repeatCount = 1
+            morphX.repeatCount = repeatCount
             morphX.beginTime = CACurrentMediaTime() + CFTimeInterval(delay)
             layer.addAnimation(morphX, forKey: "morphX")
 
@@ -198,7 +238,7 @@ public class Spring : NSObject {
             morphY.keyTimes = [0, 0.2, 0.4, 0.6, 0.8, 1]
             morphY.timingFunction = getTimingFunction(curve)
             morphY.duration = CFTimeInterval(duration)
-            morphY.repeatCount = 1
+            morphY.repeatCount = repeatCount
             morphY.beginTime = CACurrentMediaTime() + CFTimeInterval(delay)
             layer.addAnimation(morphY, forKey: "morphY")
         case "squeeze":
@@ -208,7 +248,7 @@ public class Spring : NSObject {
             morphX.keyTimes = [0, 0.2, 0.4, 0.6, 0.8, 1]
             morphX.timingFunction = getTimingFunction(curve)
             morphX.duration = CFTimeInterval(duration)
-            morphX.repeatCount = 1
+            morphX.repeatCount = repeatCount
             morphX.beginTime = CACurrentMediaTime() + CFTimeInterval(delay)
             layer.addAnimation(morphX, forKey: "morphX")
 
@@ -218,7 +258,7 @@ public class Spring : NSObject {
             morphY.keyTimes = [0, 0.2, 0.4, 0.6, 0.8, 1]
             morphY.timingFunction = getTimingFunction(curve)
             morphY.duration = CFTimeInterval(duration)
-            morphY.repeatCount = 1
+            morphY.repeatCount = repeatCount
             morphY.beginTime = CACurrentMediaTime() + CFTimeInterval(delay)
             layer.addAnimation(morphY, forKey: "morphY")
         case "flash":
@@ -227,7 +267,7 @@ public class Spring : NSObject {
             animation.fromValue = 1
             animation.toValue = 0
             animation.duration = CFTimeInterval(duration)
-            animation.repeatCount = 2
+            animation.repeatCount = repeatCount * 2.0
             animation.autoreverses = true
             animation.beginTime = CACurrentMediaTime() + CFTimeInterval(delay)
             layer.addAnimation(animation, forKey: "flash")
@@ -248,7 +288,7 @@ public class Spring : NSObject {
             x.timingFunction = getTimingFunction(curve)
             x.duration = CFTimeInterval(duration)
             x.additive = true
-            x.repeatCount = 1
+            x.repeatCount = repeatCount
             x.beginTime = CACurrentMediaTime() + CFTimeInterval(delay)
             layer.addAnimation(x, forKey: "x")
         case "swing":
@@ -303,7 +343,6 @@ public class Spring : NSObject {
         animateFrom = true
         animatePreset()
         setView {}
-        self.resetAll()
     }
 
     public func animateNext(completion: () -> ()) {
@@ -312,14 +351,12 @@ public class Spring : NSObject {
         setView {
             completion()
         }
-        self.resetAll()
     }
 
     public func animateTo() {
         animateFrom = false
         animatePreset()
         setView {}
-        self.resetAll()
     }
 
     public func animateToNext(completion: () -> ()) {
@@ -328,7 +365,6 @@ public class Spring : NSObject {
         setView {
             completion()
         }
-        self.resetAll()
     }
     
     public func customAwakeFromNib() {
@@ -338,12 +374,16 @@ public class Spring : NSObject {
     }
     
     public func customDidMoveToWindow() {
+
         if autostart {
+
+            if UIApplication.sharedApplication().applicationState != .Active {
+                shouldAnimateAfterActive = true
+                return
+            }
+
             alpha = 0
-            animateFrom = true
-            animatePreset()
-            setView {}
-            self.resetAll()
+            animate()
         }
     }
 
@@ -363,25 +403,29 @@ public class Spring : NSObject {
             usingSpringWithDamping: damping,
             initialSpringVelocity: velocity,
             options: getAnimationOptions(curve),
-            animations: {
-
-                if self.animateFrom {
-                    self.transform = CGAffineTransformIdentity
-                    self.alpha = 1
+            animations: { [weak self] in
+                if let _self = self
+                {
+                    if _self.animateFrom {
+                        _self.transform = CGAffineTransformIdentity
+                        _self.alpha = 1
+                    }
+                    else {
+                        let translate = CGAffineTransformMakeTranslation(_self.x, _self.y)
+                        let scale = CGAffineTransformMakeScale(_self.scaleX, _self.scaleY)
+                        let rotate = CGAffineTransformMakeRotation(_self.rotate)
+                        let translateAndScale = CGAffineTransformConcat(translate, scale)
+                        _self.transform = CGAffineTransformConcat(rotate, translateAndScale)
+                        
+                        _self.alpha = _self.opacity
+                    }
+                    
                 }
-                else {
-                    let translate = CGAffineTransformMakeTranslation(self.x, self.y)
-                    let scale = CGAffineTransformMakeScale(self.scaleX, self.scaleY)
-                    let rotate = CGAffineTransformMakeRotation(self.rotate)
-                    let translateAndScale = CGAffineTransformConcat(translate, scale)
-                    self.transform = CGAffineTransformConcat(rotate, translateAndScale)
-
-                    self.alpha = self.opacity
-                }
-
-            }, { finished in
-
+                
+            }, { [weak self] finished in
+                
                 completion()
+                self?.resetAll()
 
         })
     }
@@ -402,6 +446,7 @@ public class Spring : NSObject {
         rotate = 0
         damping = 0.7
         velocity = 0.7
+        repeatCount = 1
         delay = 0
         duration = 0.7
     }

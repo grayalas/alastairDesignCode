@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2015 Meng To (meng@designcode.io)
+// Copyright (c) 2015 James Tang (j@jamztang.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +22,29 @@
 
 import UIKit
 
-public func insertBlurView (view: UIView, style: UIBlurEffectStyle) {
-    view.backgroundColor = UIColor.clearColor()
-    
-    var blurEffect = UIBlurEffect(style: style)
-    var blurEffectView = UIVisualEffectView(effect: blurEffect)
-    blurEffectView.frame = view.bounds
-    view.insertSubview(blurEffectView, atIndex: 0)
+public class AsyncButton: UIButton {
+
+    private var imageURL = [UInt:NSURL]()
+    private var placeholderImage = [UInt:UIImage]()
+
+
+    public func setImageURL(url: NSURL?, placeholderImage placeholder:UIImage?, forState state:UIControlState) {
+
+        imageURL[state.rawValue] = url
+        placeholderImage[state.rawValue] = placeholder
+
+        if let urlString = url?.absoluteString {
+            ImageLoader.sharedLoader.imageForUrl(urlString) { [weak self] image, url in
+
+                if let strongSelf = self {
+                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                        if strongSelf.imageURL[state.rawValue]?.absoluteString == url {
+                            strongSelf.setImage(image, forState: state)
+                        }
+                    })
+                }
+            }
+        }
+    }
+
 }

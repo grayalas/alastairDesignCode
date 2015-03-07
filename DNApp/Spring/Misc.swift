@@ -1,15 +1,42 @@
+// The MIT License (MIT)
 //
-//  Misc.swift
-//  ShotsDemo
+// Copyright (c) 2015 Meng To (meng@designcode.io)
 //
-//  Created by Meng To on 2014-07-04.
-//  Copyright (c) 2014 Meng To. All rights reserved.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 import UIKit
 
 public extension String {
     public var length: Int { return countElements(self) }
+
+    public func toURL() -> NSURL? {
+        return NSURL(string: self)
+    }
+}
+
+public extension String {
+    func removeCharsFromEnd(count:Int) -> String {
+        let stringLength = countElements(self)
+        let substringIndex = (stringLength < count) ? 0 : stringLength - count
+        
+        return self.substringToIndex(advance(self.startIndex, substringIndex))
+    }
 }
 
 public func htmlToAttributedString(text: String) -> NSAttributedString! {
@@ -97,16 +124,26 @@ public func UIColorFromRGB(rgbValue: UInt) -> UIColor {
     )
 }
 
+var dateFormatter : NSDateFormatter?
+
 public func stringFromDate(date: NSDate, format: String) -> String {
-    var dateFormatter = NSDateFormatter()
-    dateFormatter.dateFormat = format
-    return dateFormatter.stringFromDate(date)
+
+    if dateFormatter == nil {
+        dateFormatter = NSDateFormatter()
+    }
+
+    dateFormatter!.dateFormat = format
+    return dateFormatter!.stringFromDate(date)
 }
 
 public func dateFromString(date: String, format: String) -> NSDate {
-    var dateFormatter = NSDateFormatter()
-    dateFormatter.dateFormat = format
-    return dateFormatter.dateFromString(date)!
+
+    if dateFormatter == nil {
+        dateFormatter = NSDateFormatter()
+    }
+
+    dateFormatter!.dateFormat = format
+    return dateFormatter!.dateFromString(date)!
 }
 
 public func randomStringWithLength (len : Int) -> NSString {
@@ -129,7 +166,7 @@ public func timeAgoSinceDate(date:NSDate, numericDates:Bool) -> String {
     let unitFlags = NSCalendarUnit.CalendarUnitMinute | NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitDay | NSCalendarUnit.CalendarUnitWeekOfYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitSecond
     let now = NSDate()
     let earliest = now.earlierDate(date)
-    let latest = (earliest == now) ? date : now
+    let latest = now.laterDate(date)
     let components:NSDateComponents = calendar.components(unitFlags, fromDate: earliest, toDate: latest, options: nil)
     
     if (components.year >= 2) {

@@ -22,6 +22,7 @@ class StoryTableViewCell: UITableViewCell {
     @IBOutlet weak var authorLabel: UILabel!
     @IBOutlet weak var upvoteButton: SpringButton!
     @IBOutlet weak var commentButton: SpringButton!
+    @IBOutlet weak var commentTextView: AutoTextView!
     weak var delegate: StoryTableViewCellDelegate?
     
     @IBAction func upvoteButtonDidTouch(sender: AnyObject) {
@@ -49,6 +50,7 @@ class StoryTableViewCell: UITableViewCell {
         let createdAt = story["created_at"] as String
         let voteCount = story["vote_count"] as Int
         let commentCount = story["comment_count"] as Int
+        let comment = story["comment"] as String
         
         titleLabel.text = title
         badgeImageView.image = UIImage(named: "badge-" + badge)
@@ -57,6 +59,10 @@ class StoryTableViewCell: UITableViewCell {
         timeLabel.text = timeAgoSinceDate(dateFromString(createdAt, "yyyy-MM-dd'T'HH:mm:ssZ"), true)
         upvoteButton.setTitle(toString(voteCount), forState: UIControlState.Normal)
         commentButton.setTitle(toString(commentCount), forState: UIControlState.Normal)
+        
+        if let commentTextView = commentTextView {
+            commentTextView.text = comment
+        }
     }
     
 }

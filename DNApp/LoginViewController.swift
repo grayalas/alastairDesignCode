@@ -12,6 +12,10 @@ class LoginViewController: UIViewController {
 
     @IBOutlet weak var dialogView: DesignableView!
     
+    @IBAction func closeButtonDidTouch(sender: AnyObject) {
+        dismissViewControllerAnimated(true, completion: nil)
+    }
+    
     @IBAction func loginButtonDidTouch(sender: AnyObject) {
         dialogView.animation = "shake"
         dialogView.animate()

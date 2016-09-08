@@ -33,7 +33,7 @@ class StoriesTableViewController: UITableViewController, StoryTableViewCellDeleg
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCellWithIdentifier("StoryCell") as StoryTableViewCell
+        let cell = tableView.dequeueReusableCellWithIdentifier("StoryCell") as! StoryTableViewCell
         
         let story = data[indexPath.row]
         cell.configureWithStory(story)
@@ -61,12 +61,12 @@ class StoriesTableViewController: UITableViewController, StoryTableViewCellDeleg
     
     // MARK: Misc
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "CommentsSegue" {
-            let toView = segue.destinationViewController as CommentsTableViewController
-            let indexPath = tableView.indexPathForCell(sender as UITableViewCell)!
-            toView.story = data[indexPath.row]
-        }
-    }
+//    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+//        if segue.identifier == "CommentsSegue" {
+//            let toView = segue.destinationViewController as! CommentsTableViewController
+//            let indexPath = tableView.indexPathForCell(sender as! UITableViewCell)!
+//            toView.story = data[indexPath.row]
+//        }
+//    }
 
 }
